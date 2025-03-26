@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interval Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+        #timer {
+            font-size: 120px;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        #status {
+            font-size: 18px;
+            text-align: center;
+            color: #666666;
+            margin: 10px 0;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+        }
+        #section-list {
+            list-style: none;
+            padding: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #section-list li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        #section-list li:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #section-list li.selected {
+            background-color: #2196F3;
+            color: white;
+        }
+        #help-section {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        #help-toggle {
+            background-color: #2196F3;
+            width: 100%;
+            text-align: left;
+        }
+        #help-content {
+            display: none;
+            padding: 10px;
+        }
+        #fullscreen-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+            z-index: 1000;
+            text-align: center;
+            padding-top: 20vh;
+        }
+        #fullscreen-timer {
+            font-size: 200px;
+            color: #333333;
+        }
+        #fullscreen-status {
+            font-size: 30px;
+            color: #666666;
+            margin: 20px 0;
+        }
+        #exit-fullscreen {
+            background-color: #ff4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main-container">
+        <h1 style="text-align: center;">Interval Timer</h1>
+        <div id="timer">00:00</div>
+        <div id="status">Ready</div>
+
+        <div class="controls">
+            <div>
+                <label><input type="radio" name="section_type" value="Exercise" checked> Exercise</label>
+                <label><input type="radio" name="section_type" value="Rest"> Rest</label>
+                <input type="number" id="duration" placeholder="Duration (s)" min="1">
+                <button onclick="addSection()">Add</button>
+            </div>
+
+            <div>
+                <label>Rounds: <input type="number" id="rounds" value="1" min="1"></label>
+                <label>Volume: <input type="range" id="volume" min="0" max="100" value="50"></label>
+            </div>
+
+            <div>
+                <label>Templates:
+                    <select id="template" onchange="loadBuiltinTemplate()">
+                        <option value="Custom">Custom</option>
+                        {% for template in templates %}
+                            <option value="{{ template }}">{{ template }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <ul id="section-list" onclick="selectSection(event)"></ul>
+            <button onclick="deleteSection()">Delete Selected</button>
+
+            <div>
+                <button id="start" onclick="startTimer()">▶ Start</button>
+                <button id="pause" onclick="togglePause()" disabled>⏸ Pause</button>
+                <button id="skip" onclick="skipSection()" disabled>⏹ Skip</button>
+                <button onclick="resetTimer()">⏹ Reset</button>
+                <button onclick="saveTemplate()">💾 Save</button>
+                <button onclick="loadTemplate()">📂 Load</button>
+                <button onclick="toggleFullscreen()">📺 Fullscreen</button>
+            </div>
+        </div>
+
+        <div id="help-section">
+            <button id="help-toggle" onclick="toggleHelp()">❓ Help</button>
+            <div id="help-content">
+                <h2>Pro Interval Timer - User Guide</h2>
+                <p><strong>Created by Robert Farrugia</strong></p>
+
+                <h3>Overview:</h3>
+                <p>This is a professional interval timer designed for exercise classes and rehabilitation programs.</p>
+
+                <h3>Features:</h3>
+                <ol>
+                    <li><strong>Add Sections:</strong>
+                        <ul>
+                            <li>Select Exercise or Rest</li>
+                            <li>Enter duration in seconds</li>
+                            <li>Click "Add" to build your workout</li>
+                        </ul>
+                    </li>
+                    <li><strong>Built-in Templates:</strong>
+                        <ul>
+                            <li>Male Exercise Class: 60s Exercise, 60s Exercise, 30s Rest</li>
+                            <li>Pulmonary Rehab Class: 45s Exercise, 45s Exercise, 30s Rest</li>
+                            <li>Select from the Templates dropdown</li>
+                        </ul>
+                    </li>
+                    <li><strong>Controls:</strong>
+                        <ul>
+                            <li>Start: Begins the timer</li>
+                            <li>Pause/Resume: Pauses or resumes the current session</li>
+                            <li>Skip: Moves to the next section</li>
+                            <li>Reset: Stops and resets the timer</li>
+                            <li>Fullscreen: Displays timer in full screen mode</li>
+                        </ul>
+                    </li>
+                    <li><strong>Settings:</strong>
+                        <ul>
+                            <li>Rounds: Set the number of times to repeat the workout</li>
+                            <li>Volume: Adjust the beep sound volume</li>
+                            <li>Save/Load Workout: Save your custom workout or load a saved one</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h3>Usage Tips:</h3>
+                <ul>
+                    <li>Use fullscreen mode for better visibility during classes</li>
+                    <li>Adjust volume to suit your environment</li>
+                    <li>Save frequently used workouts for quick access</li>
+                    <li>Use templates for standard class formats</li>
+                </ul>
+
+                <h3>Contact:</h3>
+                <p>For support or feedback, contact Robert Farrugia at [insert contact info].</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="fullscreen-container">
+        <div id="fullscreen-timer">00:00</div>
+        <div id="fullscreen-status">Ready</div>
+        <button id="exit-fullscreen" onclick="toggleFullscreen()">Exit Fullscreen</button>
+    </div>
+
+    <audio id="beep" src="/static/beep.wav"></audio>
+    <audio id="start-sound" src="/static/start.wav"></audio>
+
+    <script>
+        let running = false;
+        let paused = false;
+        let currentTime = 0;
+        let sectionIdx = 0;
+        let roundNum = 0;
+        let timerId = null;
+        let sections = [];
+        let selectedSectionIndex = -1;
+        let fullscreen = false;
+
+        function updateTimer() {
+            if (!running || paused || !sections.length) return;
+
+            const totalRounds = parseInt(document.getElementById('rounds').value) || 1;
+            if (roundNum >= totalRounds) {
+                resetTimer();
+                return;
+            }
+
+            const [sectionType, duration] = sections[sectionIdx];
+            const statusText = `${sectionType} - Round ${roundNum + 1}/${totalRounds}`;
+            document.getElementById('status').textContent = statusText;
+            document.getElementById('fullscreen-status').textContent = statusText;
+            const bgColor = sectionType === "Exercise" ? "#ff4444" : "#4CAF50";
+            document.getElementById('timer').style.backgroundColor = bgColor;
+            document.getElementById('fullscreen-container').style.backgroundColor = bgColor;
+
+            if (currentTime > 0) {
+                currentTime--;
+            } else {
+                document.getElementById('beep').volume = document.getElementById('volume').value / 100;
+
+                document.getElementById('beep').play();
+                sectionIdx++;
+                if (sectionIdx >= sections.length) {
+                    sectionIdx = 0;
+                    roundNum++;
+                }
+                if (roundNum < totalRounds) {
+                    currentTime = sections[sectionIdx][1];
+                } else {
+                    resetTimer();
+                    return;
+                }
+            }
+
+            const mins = Math.floor(currentTime / 60);
+            const secs = currentTime % 60;
+            const timeText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('timer').textContent = timeText;
+            document.getElementById('fullscreen-timer').textContent = timeText;
+        }
+
+        function startTimer() {
+            if (running || !sections.length) return;
+            const rounds = parseInt(document.getElementById('rounds').value);
+            if (isNaN(rounds) || rounds <= 0) {
+                alert("Please enter a valid number of rounds");
+                return;
+            }
+            running = true;
+            document.getElementById('start').disabled = true;
+            document.getElementById('pause').disabled = false;
+            document.getElementById('skip').disabled = false;
+            document.getElementById('start-sound').volume = document.getElementById('volume').value / 100;
+            document.getElementById('start-sound').play();
+            currentTime = sections[0][1];
+            sectionIdx = 0;
+            roundNum = 0;
+            timerId = setInterval(updateTimer, 1000);
+        }
+
+        function togglePause() {
+            paused = !paused;
+            document.getElementById('pause').textContent = paused ? "▶ Resume" : "⏸ Pause";
+        }
+
+        function skipSection() {
+            if (!running) return;
+            document.getElementById('beep').volume = document.getElementById('volume').value / 100;
+            document.getElementById('beep').play();
+            sectionIdx++;
+            if (sectionIdx >= sections.length) {
+                sectionIdx = 0;
+                roundNum++;
+                if (roundNum >= parseInt(document.getElementById('rounds').value)) {
+                    resetTimer();
+                    return;
+                }
+            }
+            currentTime = sections[sectionIdx][1];
+            updateTimer();
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            running = false;
+            paused = false;
+            currentTime = 0;
+            sectionIdx = 0;
+            roundNum = 0;
+            const resetText = "00:00";
+            document.getElementById('timer').textContent = resetText;
+            document.getElementById('fullscreen-timer').textContent = resetText;
+            document.getElementById('status').textContent = "Ready";
+            document.getElementById('fullscreen-status').textContent = "Ready";
+            document.getElementById('timer').style.backgroundColor = "#f0f0f0";
+            document.getElementById('fullscreen-container').style.backgroundColor = "#f0f0f0";
+            document.getElementById('start').disabled = false;
+            document.getElementById('pause').disabled = true;
+            document.getElementById('skip').disabled = true;
+            document.getElementById('pause').textContent = "⏸ Pause";
+        }
+
+        function addSection() {
+            const sectionType = document.querySelector('input[name="section_type"]:checked').value;
+            const duration = document.getElementById('duration').value;
+            fetch('/add_section', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({section_type: sectionType, duration: duration})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    sections.push([sectionType, parseInt(duration)]);
+                    const li = document.createElement('li');
+                    li.textContent = data.section;
+                    document.getElementById('section-list').appendChild(li);
+                    document.getElementById('duration').value = '';
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+
+        function selectSection(event) {
+            const li = event.target.closest('li');
+            if (li) {
+                const list = document.getElementById('section-list').children;
+                for (let i = 0; i < list.length; i++) {
+                    list[i].classList.remove('selected');
+                }
+                li.classList.add('selected');
+                selectedSectionIndex = Array.from(list).indexOf(li);
+            }
+        }
+
+        function deleteSection() {
+            if (selectedSectionIndex >= 0) {
+                fetch('/delete_section', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({index: selectedSectionIndex})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        sections.splice(selectedSectionIndex, 1);
+                        const list = document.getElementById('section-list');
+                        list.removeChild(list.children[selectedSectionIndex]);
+                        selectedSectionIndex = -1;
+                    }
+                });
+            }
+        }
+
+        function saveTemplate() {
+            fetch('/save_template', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rounds: document.getElementById('rounds').value})
+            })
+            .then(response => response.json())
+            .then(data => alert(data.success ? "Workout saved" : data.error));
+        }
+
+        function loadTemplate() {
+            fetch('/load_template', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    sections = data.sections;
+                    document.getElementById('rounds').value = data.rounds;
+                    const list = document.getElementById('section-list');
+                    list.innerHTML = '';
+                    sections.forEach(([type, duration]) => {
+                        const li = document.createElement('li');
+                        li.textContent = `${type} - ${duration}s`;
+                        list.appendChild(li);
+                    });
+                    selectedSectionIndex = -1;
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+
+        function loadBuiltinTemplate() {
+            const template = document.getElementById('template').value;
+            if (template !== "Custom") {
+                fetch('/load_builtin_template', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({template: template})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        sections = data.sections;
+                        document.getElementById('rounds').value = data.rounds;
+                        const list = document.getElementById('section-list');
+                        list.innerHTML = '';
+                        sections.forEach(([type, duration]) => {
+                            const li = document.createElement('li');
+                            li.textContent = `${type} - ${duration}s`;
+                            list.appendChild(li);
+                        });
+                        selectedSectionIndex = -1;
+                    }
+                });
+            }
+        }
+
+        function toggleHelp() {
+            const content = document.getElementById('help-content');
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleFullscreen() {
+            fullscreen = !fullscreen;
+            const mainContainer = document.getElementById('main-container');
+            const fullscreenContainer = document.getElementById('fullscreen-container');
+
+            if (fullscreen) {
+                mainContainer.style.display = 'none';
+                fullscreenContainer.style.display = 'block';
+            } else {
+                mainContainer.style.display = 'block';
+                fullscreenContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
