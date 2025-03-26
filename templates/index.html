@@ -31,6 +31,15 @@
         .controls {
             margin-top: 20px;
         }
+        .settings-group, .template-group {
+            padding: 10px 0;
+        }
+        .settings-label {
+            margin-right: 20px;
+        }
+        .controls > div {
+            margin-bottom: 15px;
+        }
         button {
             padding: 10px 20px;
             margin: 5px;
@@ -119,13 +128,13 @@
                 <button onclick="addSection()">Add</button>
             </div>
 
-            <div>
-                <label>Rounds: <input type="number" id="rounds" value="1" min="1"></label>
-                <label>Volume: <input type="range" id="volume" min="0" max="100" value="50"></label>
+            <div class="settings-group">
+                <label class="settings-label">Rounds: <input type="number" id="rounds" value="1" min="1"></label>
+                <label class="settings-label">Volume: <input type="range" id="volume" min="0" max="100" value="50"></label>
             </div>
 
-            <div>
-                <label>Templates:
+            <div class="template-group">
+                <label class="settings-label">Templates:
                     <select id="template" onchange="loadBuiltinTemplate()">
                         <option value="Custom">Custom</option>
                         {% for template in templates %}
