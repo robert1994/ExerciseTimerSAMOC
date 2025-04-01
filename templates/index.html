@@ -148,10 +148,10 @@
             <button onclick="deleteSection()">Delete Selected</button>
 
             <div>
-                <button id="start" onclick="startTimer()">▶ Start</button>
-                <button id="pause" onclick="togglePause()" disabled>⏸ Pause</button>
-                <button id="skip" onclick="skipSection()" disabled>⏹ Skip</button>
-                <button onclick="resetTimer()">⏹ Reset</button>
+                <button id="start" onclick="startTimer()">▶️ Start</button>
+                <button id="pause" onclick="togglePause()" disabled>⏸️ Pause</button>
+                <button id="skip" onclick="skipSection()" disabled>⏭️ Skip</button>
+                <button onclick="resetTimer()">🔁 Reset</button>
                 <button onclick="saveTemplate()">💾 Save</button>
                 <button onclick="loadTemplate()">📂 Load</button>
                 <button onclick="toggleFullscreen()">📺 Fullscreen</button>
@@ -210,7 +210,7 @@
                 </ul>
 
                 <h3>Contact:</h3>
-                <p>For support or feedback, contact Robert Farrugia at robert.d.farrugia@gov.mt.</p>
+                <p>For support or feedback, contact Robert Farrugia at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="86f4e9e4e3f4f2a8e2a8e0e7f4f4f3e1efe7c6e1e9f0a8ebf2">[email&#160;protected]</a>.</p>
             </div>
         </div>
     </div>
@@ -224,6 +224,7 @@
     <audio id="beep" src="/static/beep.wav"></audio>
     <audio id="start-sound" src="/static/start.wav"></audio>
 
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script>
         let running = false;
         let paused = false;
@@ -248,27 +249,39 @@
             const statusText = `${sectionType} - Round ${roundNum + 1}/${totalRounds}`;
             document.getElementById('status').textContent = statusText;
             document.getElementById('fullscreen-status').textContent = statusText;
-            const bgColor = sectionType === "Exercise" ? "#ff4444" : "#4CAF50";
+
+            // Modified color logic
+            let bgColor;
+            if (sectionType === "Rest") {
+                bgColor = "#4CAF50";  // Green for rest
+            } else if (sectionIdx % 2 === 0) {
+                bgColor = "#ff4444";  // Red for first exercise
+            } else {
+                bgColor = "#ffeb3b";  // Yellow for second exercise
+            }
             document.getElementById('timer').style.backgroundColor = bgColor;
             document.getElementById('fullscreen-container').style.backgroundColor = bgColor;
 
             if (currentTime > 0) {
                 currentTime--;
             } else {
-                document.getElementById('beep').volume = document.getElementById('volume').value / 100;
+                // Play beep at section end
+                const beep = document.getElementById('beep');
+                beep.volume = document.getElementById('volume').value / 100;
+                beep.play();
 
-                document.getElementById('beep').play();
                 sectionIdx++;
                 if (sectionIdx >= sections.length) {
                     sectionIdx = 0;
                     roundNum++;
+                    if (roundNum >= totalRounds) {
+                        resetTimer();
+                        return;
+                    }
                 }
-                if (roundNum < totalRounds) {
-                    currentTime = sections[sectionIdx][1];
-                } else {
-                    resetTimer();
-                    return;
-                }
+                currentTime = sections[sectionIdx][1];
+                // Play start beep for new section
+                beep.play();
             }
 
             const mins = Math.floor(currentTime / 60);
