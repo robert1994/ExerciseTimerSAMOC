@@ -1,6 +1,6 @@
 /* WAVEFELD v0.2. Independent browser interface (MIT). */
 (()=>{"use strict";
-const $=id=>document.getElementById(id),deep=x=>JSON.parse(JSON.stringify(x));
+const $=id=>document.getElementById(id),deep=x=>JSON.parse(JSON.stringify(x)),clip=(v,a,b)=>Math.max(a,Math.min(b,v));
 const Engine=window.WavefeldEngine,engine=new Engine(),base=deep(engine.patch);
 const groupNames=["OSCILLATORS","FILTERS","ENVELOPES","LFO","MOD MATRIX","EFFECTS","ARPEGGIATOR"];
 const banks=Engine.banks,types=["LOWPASS","HIGHPASS","BANDPASS","NOTCH"],shapes=["SINE","TRIANGLE","SAW","SQUARE"];
