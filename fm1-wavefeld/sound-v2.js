@@ -108,7 +108,7 @@ const bus=ctx.createGain(),wa=ctx.createOscillator(),wb=ctx.createOscillator(),w
 ga=ctx.createGain(),gb=ctx.createGain(),gc=ctx.createGain(),
 ring=ctx.createGain(),gr=ctx.createGain(),no=ctx.createBufferSource(),gn=ctx.createGain(),
 drive=ctx.createWaveShaper(),f1=ctx.createBiquadFilter(),f2=ctx.createBiquadFilter(),
-fs=ctx.createGain(),fp1=ctx.createGain(),fp2=ctx.createGain(),
+fs=ctx.createGain(),fd=ctx.createGain(),fp1=ctx.createGain(),fp2=ctx.createGain(),
 amp=ctx.createGain(),pan=ctx.createStereoPanner();
 const base=hz(note),semi=v=>Math.round((v-.5)*48);
 wa.frequency.value=base*Math.pow(2,semi(p.osc1Semi)/12);
@@ -125,7 +125,7 @@ no.buffer=this.noiseBuffer;no.loop=true;no.connect(gn).connect(bus);gn.gain.valu
 const curve=new Float32Array(513);const boost=1+p.f1Drive*7;
 for(let i=0;i<curve.length;i++){let x=i/256-1;curve[i]=Math.tanh(x*boost)/Math.tanh(boost);}
 drive.curve=curve;drive.oversample="2x";
-bus.connect(drive);drive.connect(f1);f1.connect(fs).connect(f2);drive.connect(f2);
+bus.connect(drive);drive.connect(f1);f1.connect(fs).connect(f2);drive.connect(fd).connect(f2);
 f1.connect(fp1).connect(amp);f2.connect(fp2).connect(amp);
 f1.type=FTYPES[p.f1Type|0]||"lowpass";f2.type=FTYPES[p.f2Type|0]||"lowpass";
 f1.Q.value=.5+p.f1Res*18;f2.Q.value=.5+p.f2Res*18;
@@ -135,7 +135,7 @@ const a=log(.005,7,p.ampA),d=log(.03,12,p.ampD),peak=.68*(velocity/127);
 amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(peak,t+a);
 amp.gain.setTargetAtTime(peak*p.ampS,t+a,d/3);
 pan.pan.value=(p.pan-.5)*1.5;
-const voice={note,velocity,at:t,offAt:null,wa,wb,wc,ga,gb,gc,ring,gr,no,gn,drive,f1,f2,fs,fp1,fp2,amp,pan,
+const voice={note,velocity,at:t,offAt:null,wa,wb,wc,ga,gb,gc,ring,gr,no,gn,drive,f1,f2,fs,fd,fp1,fp2,amp,pan,
 dead:false,last1:-99,last2:-99,releaseTimer:null};
 this.voices.push(voice);wa.start(t);wb.start(t);wc.start(t);no.start(t);
 this.applyVoice(voice,t);return voice;
@@ -150,7 +150,7 @@ v.amp.gain.setTargetAtTime(0,t,Math.max(.01,r/4));
 const stop=t+r*1.55+.06;
 try{v.wa.stop(stop);v.wb.stop(stop);v.wc.stop(stop);v.no.stop(stop);}catch(e){}
 const timer=setTimeout(()=>{
-for(const n of [v.wa,v.wb,v.wc,v.no,v.ga,v.gb,v.gc,v.ring,v.gr,v.gn,v.drive,v.f1,v.f2,v.fs,v.fp1,v.fp2,v.amp,v.pan]){
+for(const n of [v.wa,v.wb,v.wc,v.no,v.ga,v.gb,v.gc,v.ring,v.gr,v.gn,v.drive,v.f1,v.f2,v.fs,v.fd,v.fp1,v.fp2,v.amp,v.pan]){
 try{n.disconnect();}catch(e){}}
 this.voices=this.voices.filter(x=>x!==v);this.releaseTimers.delete(timer);
 },Math.min(26000,Math.max(25,(stop-ctx.currentTime+.1)*1000)));
@@ -187,7 +187,7 @@ v.f1.Q.setTargetAtTime(.5+p.f1Res*18,t,.03);
 v.f2.Q.setTargetAtTime(.5+p.f2Res*18,t,.03);
 v.f1.type=FTYPES[p.f1Type|0]||"lowpass";v.f2.type=FTYPES[p.f2Type|0]||"lowpass";
 const serial=(p.routing|0)===0;
-v.fs.gain.setTargetAtTime(serial?1:0,t,.04);
+v.fs.gain.setTargetAtTime(serial?1:0,t,.04);v.fd.gain.setTargetAtTime(serial?0:1,t,.04);
 v.fp1.gain.setTargetAtTime(serial?0:.55,t,.04);
 v.fp2.gain.setTargetAtTime(serial?1:.55,t,.04);
 v.pan.pan.setTargetAtTime(clip((p.pan-.5)*1.6+m[10]*.6,-1,1),t,.04);
