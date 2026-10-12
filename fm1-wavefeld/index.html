@@ -1,58 +1,72 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101721"><title>WAVEFELD / FM-1 · Wavetable ambient laboratory</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WAVEFELD FM-1 | hardware-limit wavetable synth</title>
+<meta name="description" content="Playable hardware-target study for M-VAVE FM-1: four voices, two wavetables, one filter, compact delay and real 240×240 panel menus.">
 <style>
-:root{color-scheme:dark;--bg:#090e15;--panel:#16212c;--line:#314050;--muted:#9eb0be;--lime:#bbfbcf;--cyan:#7bdfdf;--text:#e9f4f8}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 52% 0%,#24384a 0,#101926 35%,#090e15 75%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
-a{color:var(--cyan)}button,select,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
-.wrap{max-width:1140px;padding:34px 20px 60px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.eyebrow{font-size:11px;letter-spacing:.27em;color:var(--cyan);font-weight:800}
-h1{font-size:clamp(38px,6vw,76px);line-height:1;margin:8px 0 13px;letter-spacing:-.045em;font-weight:780}h1 b{color:var(--lime)}p{margin:0;color:var(--muted)}.intro{max-width:660px}.pill{border:1px solid var(--line);border-radius:99px;padding:7px 11px;color:var(--muted);font-size:12px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 20px;align-items:center}.toolbar button,.toolbar select{background:#1c2c38;border:1px solid #3a5061;color:#e9f4f8;border-radius:9px;padding:10px 12px}
-.toolbar .power{background:#37645a;color:#fff;font-weight:800;border-color:#67a99b}.toolbar .power.on{background:#8d413f;border-color:#c16f6a}.toolbar button:hover,.toolbar select:hover{filter:brightness(1.15)}
-.device{background:linear-gradient(155deg,#293849,#192532 42%,#101a26 100%);border:1px solid #516477;border-radius:20px;box-shadow:0 24px 65px #0009,0 0 0 5px #0b1118;overflow:hidden;padding:26px 24px 22px}
-.brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px}.brand strong{font-size:22px;letter-spacing:.12em}.brand small{color:#8fa7b7;letter-spacing:.12em}
-.deck{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:stretch}.display{background:linear-gradient(135deg,#10242d,#081922);border:7px solid #070d13;border-radius:10px;min-height:252px;padding:18px;box-shadow:inset 0 0 40px #0008;position:relative;color:#a2f7dc}
-.display-top{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#78bdbb;font-size:11px;letter-spacing:.15em}.display h2{font-size:31px;letter-spacing:.04em;margin:7px 0 0;line-height:1.1}.preset{color:#d0f7cb;font-size:15px}.display .bottom{display:flex;justify-content:space-between;align-items:end;margin-top:18px;gap:10px}.display .bottom strong{font-size:23px}.display .bar{height:6px;background:#233b3c;border-radius:5px;margin-top:10px;overflow:hidden}.display .bar i{display:block;height:100%;width:2%;background:#78ecce;transition:width .1s}.glow{width:8px;height:8px;border-radius:50%;display:inline-block;background:#4c6166;box-shadow:none}.glow.active{background:#afffd3;box-shadow:0 0 12px #7afcb3}
-.knobs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.knob{background:#101c27b0;border:1px solid #405060;border-radius:12px;text-align:center;padding:9px 6px;min-height:113px}.knob label{font-size:11px;color:#adc0ce;letter-spacing:.08em;display:block}.knob .dial{height:41px;width:41px;border:5px solid #0d131a;border-radius:50%;margin:4px auto;position:relative;background:conic-gradient(from 220deg,#77dfcc 0deg,var(--cyan) var(--deg),#283c47 var(--deg) 270deg,#19242c 271deg);box-shadow:0 3px 8px #0008}.knob .dial:after{content:"";position:absolute;inset:6px;background:#121e28;border:1px solid #597080;border-radius:50%}.knob input{width:90%;height:8px;accent-color:#9befdb;cursor:ew-resize}.knob output{font-size:12px;color:#e4fcf2}
-.controls{display:flex;gap:12px;align-items:start;justify-content:space-between;margin-top:20px;flex-wrap:wrap}.bank{display:flex;gap:5px;flex-wrap:wrap}.btn{background:#243442;color:#dce9f0;border:1px solid #627182;border-bottom:4px solid #0c161f;border-radius:7px;min-width:62px;padding:10px 8px;font-size:12px;font-weight:750;letter-spacing:.05em}.btn.sel{background:#477c74;color:#fff;border-color:#8cd3c2}.btn[aria-pressed=true]{background:#4b9a7e}.btn.play{background:#3a5e55}.btn.danger{color:#ffc6b8}
-.keys{display:flex;position:relative;height:150px;margin-top:18px;background:#091119;border-radius:8px;padding:6px 6px 0;user-select:none;touch-action:none;border:1px solid #0b0d12}.white{position:relative;flex:1;border:1px solid #333b44;background:linear-gradient(#f6f4ed,#c4d0d2);height:100%;border-radius:0 0 5px 5px;cursor:pointer}.white:active,.white.down{background:linear-gradient(#97e6d6,#67b9b0)}.black{position:absolute;z-index:2;background:linear-gradient(#18212a,#080d13);height:61%;width:3.55%;border-radius:0 0 4px 4px;border:1px solid #43525d;box-shadow:2px 3px 4px #0009;cursor:pointer}.black:active,.black.down{background:linear-gradient(#468c83,#24464a)}.keyletter{position:absolute;bottom:7px;left:0;right:0;font-size:9px;text-align:center;color:#566368;pointer-events:none}
-.foot{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:14px;color:#8d9cab;font-size:11px}
-.below{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:27px}.info{border:1px solid #2d4150;border-radius:14px;background:#101c26ba;padding:20px}.info h3{margin:0 0 9px;letter-spacing:.04em}.info p{line-height:1.65}.info ul{padding-left:20px;margin:8px 0;color:var(--muted)}.info li{margin:6px 0}.status{color:#aedecf;min-height:20px}.tag{display:inline-block;padding:2px 8px;background:#263f43;color:#b9f6de;border-radius:5px;font-size:11px;margin-right:4px}.note{font-size:12px;color:#91a8b7;margin-top:18px}
-@media(max-width:760px){.wrap{padding:22px 13px 35px}.device{padding:14px}.deck{grid-template-columns:1fr}.display{min-height:215px}.controls{gap:10px}.btn{min-width:52px;padding:10px 6px}.keys{height:119px}.below{grid-template-columns:1fr}.knob{min-height:106px}}
-</style>
-</head>
-<body><main class="wrap">
-<header class="top"><div><div class="eyebrow">OPEN SYNTH PROTOTYPE / FM-1 EXPERIMENT</div><h1>WAVE<b>FELD</b></h1><p class="intro">A miniature wavetable ambient instrument inspired by the synthesis ideas of the Waldorf Blofeld. Play it in your browser, explore the sound engine, and help shape a future M-VAVE FM-1 firmware port.</p></div><span class="pill">BROWSER DEMO v0.1 · NOT FLASHABLE</span></header>
-<section class="toolbar" aria-label="Global controls">
-<button id="power" class="power">◉ Switch on audio</button>
-<label for="presets">Preset</label><select id="presets" aria-label="Preset"></select>
-<button id="save">Save locally</button><button id="export">Export patch</button><button id="import">Import patch</button><input id="file" type="file" accept=".json,application/json" hidden>
-<button id="midi">Connect Web MIDI</button><label><input type="checkbox" id="midiout"> Send MIDI notes out</label>
-</section>
-<section class="device" aria-label="FM-1 inspired front panel">
-<div class="brand"><strong>WAVEFELD <small>POLYPHONIC WAVETABLE LAB</small></strong><span><span class="glow" id="led"></span> &nbsp; FM-1 CONCEPT</span></div>
-<div class="deck"><div class="display" aria-live="polite">
-<div class="display-top"><span id="mode">OSCILLATORS</span><span id="clock">074 BPM · STOP</span></div>
-<h2 id="screenname">WAVEFELD</h2><div class="preset" id="screenpatch">Glass Cathedral</div>
-<p id="desc" style="margin-top:12px;font-size:13px;color:#82cdbf">Dual morphing spectral oscillators</p>
-<div class="bottom"><span><small style="color:#80bab0">OSC A / B</small><br><strong id="wavename">GLASS · CHOIR</strong></span><span style="font-size:11px;color:#96c6b4" id="poly">0 / 6 VOICES</span></div>
-<div class="bar"><i id="meter"></i></div></div>
-<div class="knobs" id="knobs"></div></div>
-<div class="controls"><div class="bank" id="pages"></div><div class="bank">
-<button class="btn play" id="play" aria-pressed="false">▶ PLAY / ARP</button><button class="btn" id="drone" aria-pressed="false">◉ DRONE</button><button class="btn danger" id="panic">■ STOP</button></div></div>
-<div class="keys" id="keys" aria-label="Playable keyboard"></div>
-<div class="foot"><span>2-octave keyboard · <span class="tag">Z–M</span> computer keys · <span class="tag">SPACE</span> arpeggiator</span><span id="status" class="status">Switch on audio to begin.</span></div>
-</section>
-<section class="below">
-<article class="info"><h3>HOW TO PLAY</h3><ul>
-<li>Switch on audio, then press or touch the keyboard. You can also use <strong>Z S X D C V G B H N J M</strong>.</li>
-<li>Select OSC, FILTER, ENV, LFO, FX, or ARP. The four sliders act like the FM-1's physical knobs.</li>
-<li>Press <strong>PLAY / ARP</strong> to generate repeating notes; press <strong>DRONE</strong> to hold a chord.</li>
-<li>Use <strong>Save locally</strong> to retain your patch in this browser. Export a JSON patch for backup.</li>
-</ul></article>
-<article class="info"><h3>HARDWARE ROADMAP</h3><p>Wavefeld is a <strong>working Web Audio prototype</strong>, not the actual FM-1's firmware and not a cycle-accurate emulator. The next step is to port its wavetable engine, modulation and front-panel mappings to a GPL-compatible FM-1 platform such as <a href="https://github.com/zvenson/dinghy" target="_blank" rel="noopener">Dinghy</a>, measure CPU/memory use, and test on hardware. This project does not contain Waldorf code, patches, or wavetables.</p><p class="note">Independent experiment; not affiliated with Waldorf, M-VAVE or 1010music. No firmware installer is offered.</p></article>
-</section></main>
-<script src="./sound-v2.js"></script>
-<script src="./app-v2.js"></script></body></html>
+:root{color-scheme:dark;--bg:#080d12;--panel:#1d272c;--edge:#425156;--screen:#0b2725;--mint:#b0f6bd;--muted:#9ab0b1;--gold:#dcc9a0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 55% 0,#23383f,#0a1119 53%,#070a0e);color:#ebf5f1;font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1120px;margin:auto;padding:30px 20px 60px}
+header{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:20px}
+.kicker{color:#88d6b8;font-size:11px;letter-spacing:.20em;font-weight:750}
+h1{font-size:clamp(36px,6vw,64px);letter-spacing:-.065em;margin:0;line-height:1.05}h1 span{color:#b8f6d0}
+header p{color:var(--muted);margin:8px 0 0;max-width:550px}header a{color:#c9fbe1;text-decoration:none;border:1px solid #526b65;padding:9px 13px;border-radius:8px}
+.layout{display:grid;grid-template-columns:minmax(460px,625px) minmax(230px,1fr);gap:24px;align-items:start}
+.device{border:1px solid #607175;border-radius:25px;background:linear-gradient(145deg,#38454a,#1d292f 36%,#131c22);box-shadow:0 24px 90px #000b,inset 0 3px 3px #87969622;padding:23px 21px 20px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#cfdbdc;font-weight:800;letter-spacing:.14em;font-size:12px;margin-bottom:16px}
+.dot{display:inline-block;height:8px;width:8px;border-radius:50%;background:#597574;vertical-align:middle}.dot.on{background:#b4ffa6;box-shadow:0 0 12px #a7ff92}
+.upper{display:grid;grid-template-columns:260px 1fr;gap:17px}
+.screenbezel{background:#080f13;border:1px solid #475758;border-radius:11px;padding:9px;box-shadow:inset 0 4px 15px #000c;justify-self:start}
+#screen{width:240px;height:240px;display:block;background:var(--screen);image-rendering:pixelated}
+.encoders{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-content:center}
+.encoder{background:#152027;border:1px solid #3d5558;padding:10px 4px;border-radius:12px;text-align:center;min-width:0}
+.encoder b{font-size:10px;display:block;letter-spacing:.06em;margin-bottom:8px;color:#bdcecb}
+.encrow{display:flex;align-items:center;justify-content:center;gap:4px}
+.encrow button{border:1px solid #55716c;background:#263940;color:#d2f7de;border-radius:6px;padding:6px 7px;min-width:24px}
+.encrow output{display:block;color:#f8f9f1;width:22px;min-width:0;font-size:11px}
+.knobs{margin-top:17px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.knobs .encoder{padding:10px 4px}
+.knobs label{font-size:11px;display:block;color:#8ed6c2;height:35px;overflow:hidden}
+.buttonrack{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:19px 0}
+.hwbutton{background:#263840;color:#eff3ec;border:1px solid #5d7476;border-bottom:3px solid #10171b;border-radius:7px;font-size:10px;min-height:39px;cursor:pointer}
+.hwbutton:hover,.hwbutton:focus-visible{background:#3e6a62;outline:1px solid #aaf6d3}
+.hwbutton.active{background:#447b67}.hwbutton:disabled{color:#71888b;background:#1a282f;cursor:not-allowed}
+.keybed{position:relative;display:flex;height:139px;border:7px solid #0b151b;background:#0b151b;border-radius:8px;touch-action:none;user-select:none}
+.white{position:relative;flex:1;background:linear-gradient(#f5f8ee,#cdd5d3);border-right:1px solid #69777a;border-radius:0 0 5px 5px;cursor:pointer;min-width:0}
+.white.pressed{background:linear-gradient(#b4f9d4,#70c0a8)}
+.black{position:absolute;z-index:2;top:0;width:4.2%;height:63%;background:linear-gradient(#1b272d,#080d12);border:1px solid #576766;border-radius:0 0 4px 4px;box-shadow:2px 4px 5px #0008;cursor:pointer}
+.black.pressed{background:linear-gradient(#5a9d8b,#264f4e)}
+.bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#adc5c1;flex-wrap:wrap;margin-top:12px}
+.bottom button{padding:9px 15px;border-radius:8px;background:#366353;color:#eaffea;border:1px solid #64a58a;font-weight:800;cursor:pointer}
+.bottom button:hover{background:#497965}
+.aside{display:grid;gap:14px}.panel{border:1px solid #344c4b;background:#10202aaf;border-radius:14px;padding:18px}
+.panel h2{margin:0 0 10px;font-size:17px;letter-spacing:-.01em}.panel p,.panel li{color:#b2c5c7;font-size:13px;margin:7px 0}
+.panel ul{padding-left:18px;margin:6px 0}
+.small{font-size:11px!important;color:#87a6a7!important}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.spec{border-radius:7px;background:#172e31;padding:10px 8px}
+.spec strong{display:block;font-size:17px;color:#b4efc8}.spec span{font-size:10px;color:#9bb8b7}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{border:1px solid #64716f;background:#1c3541;color:#e3f7e9;border-radius:8px;padding:9px 12px;cursor:pointer}
+.actions a{color:#b8edcd}
+.status{font-size:12px;color:#e5dfb8;min-height:38px}
+footer{font-size:11px;color:#7f9696;margin-top:22px;line-height:1.6}a{color:#aff0d5}
+@media(max-width:840px){.layout{grid-template-columns:1fr}.device{max-width:650px}.aside{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){main{padding:15px 8px 28px}.device{padding:12px 8px}.upper{grid-template-columns:1fr;justify-items:center}.encoders{grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.screenbezel{justify-self:center}.aside{grid-template-columns:1fr}.buttonrack{gap:3px}.hwbutton{font-size:8px;padding:4px 1px;min-height:38px}.keybed{height:116px}.knobs{gap:3px}.encrow button{padding:5px 5px}.encrow output{width:19px}.topline{font-size:10px}}
+</style><script src="./fm1-ui.js" defer></script></head>
+<body><main>
+<header><div><div class="kicker">ACTUAL FM-1 LIMITS / BROWSER REFERENCE</div><h1>WAVE<span>FELD</span> <small style="font-size:.28em;vertical-align:middle;letter-spacing:0">FM-1 TARGET</small></h1><p>A compact Blofeld-inspired wavetable instrument designed around the M-VAVE FM-1's real display, controls and memory constraints.</p></div><a href="./desktop-v2.html">Original desktop experiment ↗</a></header>
+<div class="layout"><div class="device" aria-label="FM-1 interactive hardware panel">
+<div class="topline"><span>WAVEFELD <span style="color:#80c7ae">Q15</span></span><span><span id="led" class="dot"></span> FM-1 HARDWARE STUDY</span></div>
+<div class="upper"><div class="screenbezel"><canvas id="screen" width="240" height="240" aria-label="FM-1 240 by 240 LCD screen">FM-1 menu screen</canvas></div>
+<div class="encoders" id="encoders"></div></div>
+<div class="knobs" id="knobs"></div>
+<div class="buttonrack" id="buttons"></div>
+<div class="keybed" id="keys" aria-label="FM-1 27 note keyboard"></div>
+<div class="bottom"><span>KEYS: F3–G5 · 27 notes · Click keys or use computer Z–M</span><button id="audio">◉ ENABLE AUDIO</button></div>
+</div>
+<div class="aside">
+<section class="panel"><h2>A hardware-first synth</h2><p>Use <strong>SELECT</strong> to change sections, <strong>ALGORITHM</strong> to move between pages, and <strong>KNOB 1–4</strong> to edit the four visible parameters. <strong>PRESETS</strong> switches patches.</p><p><strong>PLAY</strong> toggles a sustained drone; <strong>ARP</strong> enables a simple, constrained arpeggiator.</p><div class="grid"><div class="spec"><strong>4</strong><span>MAX VOICES</span></div><div class="spec"><strong>2</strong><span>WAVETABLE OSC / VOICE</span></div><div class="spec"><strong>1</strong><span>FILTER / VOICE</span></div><div class="spec"><strong>240²</strong><span>PIXEL DISPLAY</span></div></div></section>
+<section class="panel"><h2>Current patch</h2><div class="actions"><button id="save">Save locally</button><button id="reset">Reload preset</button></div><p id="status" class="status">Audio is disabled. Click ENABLE AUDIO.</p><p class="small">One LFO · AMP & filter envelopes · shared short feedback delay · 8 compact original harmonic waveforms · MIDI keyboard input (optional).</p><div class="actions"><button id="midi">Enable Web MIDI input</button></div></section>
+<section class="panel"><h2>Firmware status</h2><p><strong>Browser reference only.</strong> The online DSP follows fixed-point constraints but runs in a browser's AudioWorklet. It is <strong>not the same compiled firmware</strong> as the AC791N target, and has not been CPU-profiled on hardware.</p><p>Future native build: <a href="https://github.com/zvenson/dinghy">Dinghy FM-1 platform</a> with integer-only synthesis and host/on-device timing tests.</p></section>
+</div></div>
+<footer>Independent original sounds; no Waldorf firmware, presets or proprietary wavetables. This study targets the FM-1's documented 96 KB app RAM, 336 KB pool, 240×240 screen and integer-only audio constraints. Audio synthesis is simulated in the browser; firmware flashing is not available.</footer>
+</main></body></html>
