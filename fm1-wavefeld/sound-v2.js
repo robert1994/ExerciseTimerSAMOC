@@ -69,6 +69,7 @@ default:a=([1,2,3,4,5,6,8,10,12,16].includes(h)?1/Math.pow(h,1.2+t):0);
 const highFreqCut=Math.exp(-Math.pow(h/(7+bright*4),2));imag[h]=a*highFreqCut;
 }
 const w=ctx.createPeriodicWave(real,imag,{disableNormalization:false});
+if(this.waveCache.size>600)this.waveCache.delete(this.waveCache.keys().next().value);
 this.waveCache.set(k,w);return w;
 }
 static envValue(age,A,D,S,R,offAge){
@@ -107,7 +108,7 @@ active.sort((a,b)=>a.at-b.at);this.release(active[0],t,.04);}
 const bus=ctx.createGain(),wa=ctx.createOscillator(),wb=ctx.createOscillator(),wc=ctx.createOscillator(),
 ga=ctx.createGain(),gb=ctx.createGain(),gc=ctx.createGain(),
 ring=ctx.createGain(),gr=ctx.createGain(),no=ctx.createBufferSource(),gn=ctx.createGain(),
-drive=ctx.createWaveShaper(),f1=ctx.createBiquadFilter(),f2=ctx.createBiquadFilter(),
+drive=ctx.createWaveShaper(),drive2=ctx.createWaveShaper(),f1=ctx.createBiquadFilter(),f2=ctx.createBiquadFilter(),
 fs=ctx.createGain(),fd=ctx.createGain(),fp1=ctx.createGain(),fp2=ctx.createGain(),
 amp=ctx.createGain(),pan=ctx.createStereoPanner();
 const base=hz(note),semi=v=>Math.round((v-.5)*48);
@@ -125,8 +126,11 @@ no.buffer=this.noiseBuffer;no.loop=true;no.connect(gn).connect(bus);gn.gain.valu
 const curve=new Float32Array(513);const boost=1+p.f1Drive*7;
 for(let i=0;i<curve.length;i++){let x=i/256-1;curve[i]=Math.tanh(x*boost)/Math.tanh(boost);}
 drive.curve=curve;drive.oversample="2x";
+const curve2=new Float32Array(513);const boost2=1+p.f2Drive*7;
+for(let i=0;i<curve2.length;i++){const x=i/256-1;curve2[i]=Math.tanh(x*boost2)/Math.tanh(boost2);}
+drive2.curve=curve2;drive2.oversample="2x";
 bus.connect(drive);drive.connect(f1);f1.connect(fs).connect(f2);drive.connect(fd).connect(f2);
-f1.connect(fp1).connect(amp);f2.connect(fp2).connect(amp);
+f1.connect(fp1).connect(amp);f2.connect(drive2).connect(fp2).connect(amp);
 f1.type=FTYPES[p.f1Type|0]||"lowpass";f2.type=FTYPES[p.f2Type|0]||"lowpass";
 f1.Q.value=.5+p.f1Res*18;f2.Q.value=.5+p.f2Res*18;
 f1.frequency.value=log(45,14500,p.f1Cut);f2.frequency.value=log(45,14500,p.f2Cut);
@@ -135,8 +139,8 @@ const a=log(.005,7,p.ampA),d=log(.03,12,p.ampD),peak=.68*(velocity/127);
 amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(peak,t+a);
 amp.gain.setTargetAtTime(peak*p.ampS,t+a,d/3);
 pan.pan.value=(p.pan-.5)*1.5;
-const voice={note,velocity,at:t,offAt:null,wa,wb,wc,ga,gb,gc,ring,gr,no,gn,drive,f1,f2,fs,fd,fp1,fp2,amp,pan,
-dead:false,last1:-99,last2:-99,releaseTimer:null};
+const voice={note,velocity,at:t,offAt:null,wa,wb,wc,ga,gb,gc,ring,gr,no,gn,drive,drive2,f1,f2,fs,fd,fp1,fp2,amp,pan,
+dead:false,last1:-99,last2:-99,lastDrive1:-99,lastDrive2:-99,releaseTimer:null};
 this.voices.push(voice);wa.start(t);wb.start(t);wc.start(t);no.start(t);
 this.applyVoice(voice,t);return voice;
 }
@@ -150,7 +154,7 @@ v.amp.gain.setTargetAtTime(0,t,Math.max(.01,r/4));
 const stop=t+r*1.55+.06;
 try{v.wa.stop(stop);v.wb.stop(stop);v.wc.stop(stop);v.no.stop(stop);}catch(e){}
 const timer=setTimeout(()=>{
-for(const n of [v.wa,v.wb,v.wc,v.no,v.ga,v.gb,v.gc,v.ring,v.gr,v.gn,v.drive,v.f1,v.f2,v.fs,v.fd,v.fp1,v.fp2,v.amp,v.pan]){
+for(const n of [v.wa,v.wb,v.wc,v.no,v.ga,v.gb,v.gc,v.ring,v.gr,v.gn,v.drive,v.drive2,v.f1,v.f2,v.fs,v.fd,v.fp1,v.fp2,v.amp,v.pan]){
 try{n.disconnect();}catch(e){}}
 this.voices=this.voices.filter(x=>x!==v);this.releaseTimers.delete(timer);
 },Math.min(26000,Math.max(25,(stop-ctx.currentTime+.1)*1000)));
@@ -162,7 +166,7 @@ if(v.dead)return;const p=this.patch,m=this.modFor(v,t);
 const lp1=this.lfo(0,t),lp2=this.lfo(1,t),lp3=this.lfo(2,t);
 const one=clip(p.osc1Pos+lp1*p.l1Amt*.24+m[1]*.4);
 const two=clip(p.osc2Pos-lp1*p.l1Amt*.19+m[2]*.4);
-let ix1=(p.osc1Bank|0)*1000+Math.round(one*63),ix2=(p.osc2Bank|0)*1000+Math.round(two*63);
+let ix1=(p.osc1Bank|0)*10000+Math.round(one*63)*100+Math.round(p.osc1Brill*15),ix2=(p.osc2Bank|0)*10000+Math.round(two*63)*100+Math.round(p.osc2Brill*15);
 if(ix1!==v.last1){v.wa.setPeriodicWave(this.bankWave(p.osc1Bank,one,p.osc1Brill));v.last1=ix1;}
 if(ix2!==v.last2){v.wb.setPeriodicWave(this.bankWave(p.osc2Bank,two,p.osc2Brill));v.last2=ix2;}
 const amod=lp3*p.l3Amt*36,semi=x=>Math.round((x-.5)*48);
@@ -177,6 +181,11 @@ v.gb.gain.setTargetAtTime(p.osc2Level*.38,t,.04);
 v.gc.gain.setTargetAtTime(p.osc3Level*.33,t,.04);
 v.gr.gain.setTargetAtTime(clip(p.ring+m[8]*.3)*.15,t,.04);
 v.gn.gain.setTargetAtTime(p.noise*.17,t,.04);
+for(const [node,driveVal,field] of [[v.drive,p.f1Drive,"lastDrive1"],[v.drive2,p.f2Drive,"lastDrive2"]]){
+const boost=Math.round(driveVal*100);if(v[field]!==boost){
+const k=1+driveVal*7,curve=new Float32Array(513);for(let i=0;i<curve.length;i++){const x=i/256-1;curve[i]=Math.tanh(x*k)/Math.tanh(k);}
+node.curve=curve;v[field]=boost;
+}}
 const delta=Math.max(0,t-v.at);
 const env=WavefeldEngine.envValue(delta,p.fltA,p.fltD,p.fltS,p.fltR,v.offAt===null?null:v.offAt-v.at);
 const c1=clip(p.f1Cut+p.f1Env*(env-.3)*.34+lp2*p.l2Amt*.18+m[3]*.22+(v.note-60)*(p.f1Key-.5)*.012);
