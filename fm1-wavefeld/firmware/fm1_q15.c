@@ -197,7 +197,7 @@ void wfq_params(WFQSynth *s,const WFQParams *p){
  s->release_f=release_table[p->filter_release&127u];
  s->sustain_a=((uint32_t)(p->amp_sustain&127u)*ENV_TOP)/127u;
  s->sustain_f=((uint32_t)(p->filter_sustain&127u)*ENV_TOP)/127u;
- rate=p->lfo_rate&127u;s->lfo_inc=1400u+3u*(rate+1u)*(rate+1u);
+ rate=p->lfo_rate&127u;s->lfo_inc=1400u+40u*(rate+1u)*(rate+1u);
  s->delay_tap=(uint16_t)(3072u+(uint32_t)(p->delay&127u)*100u);
  s->feedback_q15=(uint16_t)((uint32_t)(p->feedback&127u)*164u);
  s->echo_mix_q15=(uint16_t)((uint32_t)(p->delay&127u)*110u);
