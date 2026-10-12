@@ -92,6 +92,7 @@ encoder("SELECT","sel",()=>selectSection(-1),()=>selectSection(1));
 encoder("ALGORITHM","alg",()=>selectPage(-1),()=>selectPage(1));
 encoder("PRESETS","pre",()=>usePreset((preset+6)%7),()=>usePreset((preset+1)%7));
 for(let i=0;i<4;i++)encoder("KNOB "+(i+1),"k"+i,()=>editKnob(i,-1),()=>editKnob(i,1),true);
+$("master-volume").addEventListener("input",e=>{params.volume=clamp(Number(e.target.value),0,127);send({type:"param",name:"volume",value:params.volume});draw();});
 const oldDraw=draw;
 draw=function(){
 oldDraw();
@@ -100,6 +101,7 @@ sel.textContent=String(section+1);alg.textContent=String(page+1);pre.textContent
 for(let i=0;i<4;i++){
 const item=sections[section].pages[page].items[i];$("lab-k"+i).textContent=item.title;$("out-k"+i).textContent=item.kind==="bank"?String(params[item.key]):String(Math.round(params[item.key]/127*99));
 }
+$("master-volume").value=String(params.volume);$("master-val").textContent=String(params.volume);
 $("led").classList.toggle("on",Boolean(ctx&&ctx.state==="running"));
 };
 async function power(){if(!window.AudioWorkletNode){status("AudioWorklet not supported. Use Chrome/Edge.");return;}
