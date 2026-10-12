@@ -205,7 +205,8 @@ void wfq_params(WFQSynth *s,const WFQParams *p){
 void wfq_init(WFQSynth *s){
  uint32_t i;
  static const WFQParams init={2,5,55,63,57,65,82,31,67,55,89,78,38,65,30,60,48,35,40,70,48,85};
- if(!s)return;clear_bytes(s,sizeof(*s));
+ if(!s) return;
+ clear_bytes(s,sizeof(*s));
  for(i=0;i<WFQ_DELAY_SAMPLES;i++)wfq_echo[i]=0;
  wfq_params(s,&init);
 }
