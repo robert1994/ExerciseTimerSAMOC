@@ -21,7 +21,7 @@ const pgs=[
 ["FILTER 1 / MAIN",m("CUTOFF","f1Cut","freq"),m("RESONANCE","f1Res"),m("TYPE","f1Type","filter"),m("ENV DEPTH","f1Env")],
 ["FILTER 1 / MORE",m("DRIVE","f1Drive"),m("KEYTRACK","f1Key","bipolar"),m("CUTOFF","f1Cut","freq"),m("RESONANCE","f1Res")],
 ["FILTER 2 / MAIN",m("CUTOFF","f2Cut","freq"),m("RESONANCE","f2Res"),m("TYPE","f2Type","filter"),m("ENV DEPTH","f2Env")],
-["FILTER 2 / MORE",m("DRIVE*","f2Drive"),m("KEYTRACK","f2Key","bipolar"),m("CUTOFF","f2Cut","freq"),m("RESONANCE","f2Res")],
+["FILTER 2 / MORE",m("DRIVE","f2Drive"),m("KEYTRACK","f2Key","bipolar"),m("CUTOFF","f2Cut","freq"),m("RESONANCE","f2Res")],
 ["FILTER ROUTING",m("ROUTING","routing","route"),m("FILTER 1","f1Cut","freq"),m("FILTER 2","f2Cut","freq"),m("DRIVE","f1Drive")]
 ],
 [
@@ -58,8 +58,8 @@ const descriptions=[
 "Arpeggiator with modes, octaves, probability and a 16-step gate pattern. Use the 4 STEP pages for pattern programming."
 ];
 const patches=[
-["A01 GLASS CATHEDRAL",{osc1Bank:2,osc1Pos:.62,osc2Bank:6,osc2Pos:.76,ampA:.68,ampR:.81,f1Cut:.66,l1Amt:.72,reverb:.69}],
-["A02 QUANTUM CHOIR",{osc1Bank:6,osc1Pos:.48,osc2Bank:1,osc2Pos:.69,osc3Level:.05,routing:1,f2Type:2,f1Cut:.47,ampA:.74,ampR:.86,reverb:.73}],
+["A01 GLASS CATHEDRAL",{osc1Bank:2,osc1Pos:.62,osc2Bank:6,osc2Pos:.76,ampA:.68,ampR:.81,f1Cut:.66,l1Amt:.72,reverb:.69,matrix:[{source:1,target:1,amount:.63,curve:.5},{source:2,target:3,amount:.59,curve:.5}]}],
+["A02 QUANTUM CHOIR",{osc1Bank:6,osc1Pos:.48,osc2Bank:1,osc2Pos:.69,osc3Level:.05,routing:1,f2Type:2,f1Cut:.47,ampA:.74,ampR:.86,reverb:.73,matrix:[{source:1,target:2,amount:.73,curve:.5},{source:4,target:4,amount:.65,curve:.4}]}],
 ["A03 ARCTIC SIGNAL",{osc1Bank:3,osc1Pos:.84,osc2Bank:5,osc2Pos:.36,ampA:.03,ampS:.15,ampR:.44,f1Res:.72,f1Cut:.34,delayMix:.63,feedback:.68}],
 ["A04 PPG DAYDREAM",{osc1Bank:0,osc1Pos:.28,osc2Bank:5,osc2Pos:.79,osc3Shape:2,osc3Level:.2,l1Amt:.86,ampA:.53,ampR:.72}],
 ["A05 ABYSSAL CURRENT",{osc1Bank:4,osc1Pos:.12,osc2Bank:3,osc2Pos:.39,osc1Semi:.25,osc2Semi:.25,f1Cut:.19,f2Cut:.36,ampA:.67,ampR:.9}],
@@ -133,7 +133,7 @@ $("wfSub").addEventListener("change",e=>navigate(section,+e.target.value));
 function status(s){$("status").textContent=s;}
 function setPreset(name,override){
 const patch=deep(base);
-for(const key of Object.keys(patch)){if(key==="matrix"&&Array.isArray(override.matrix))patch.matrix=override.matrix.slice(0,16).map((slot,i)=>Object.assign({},patch.matrix[i],slot));
+for(const key of Object.keys(patch)){if(key==="matrix"&&Array.isArray(override.matrix))patch.matrix=patch.matrix.map((slot,i)=>Object.assign({},slot,override.matrix[i]||{}));
 else if(key==="arpSteps"&&Array.isArray(override.arpSteps))patch.arpSteps=override.arpSteps.slice(0,16).map(v=>v?1:0);
 else if(typeof override[key]==="number"&&Number.isFinite(override[key]))patch[key]=override[key];}
 engine.patch=patch;engine.update();patchName=name;navigate(section,page);status("Loaded "+name);
