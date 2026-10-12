@@ -1,0 +1,25 @@
+name: Wavefeld FM-1 Q15 host tests
+on:
+  push:
+    paths:
+      - "fm1-wavefeld/firmware/**"
+      - ".github/workflows/wavefeld-fm1-q15.yml"
+  workflow_dispatch:
+jobs:
+  host-compile-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile fixed-point DSP with GCC
+        run: |
+          gcc -std=c11 -O2 -Wall -Wextra -Werror -pedantic -fsanitize=undefined -fno-sanitize-recover=all fm1-wavefeld/firmware/fm1_q15.c fm1-wavefeld/firmware/tests/q15_smoke.c -o /tmp/wavefeld-q15-smoke
+      - name: Four-voice host smoke test
+        run: /tmp/wavefeld-q15-smoke
+      - name: Reject floating-point source in the FM-1 core
+        run: |
+          if grep -nE '(^|[[:space:]])(float|double)[[:space:]]' fm1-wavefeld/firmware/fm1_q15.c; then
+            echo "FM-1 native core contains floating-point declarations"
+            exit 1
+          fi
