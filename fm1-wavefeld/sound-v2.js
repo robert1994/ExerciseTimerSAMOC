@@ -92,10 +92,10 @@ for(const slot of p.matrix||[]){const src=SOURCES[slot.source|0],target=slot.tar
 if(!src||src==="OFF"||!target||!TARGETS[target])continue;
 let s=0;
 if(src.startsWith("LFO"))s=this.lfo(Number(src.slice(-1))-1,at);
-else if(src==="ENV 3")s=WavefeldEngine.envValue(at-voice.at,p.e3A,p.e3D,p.e3S,p.e3R,voice.offAt===null?null:voice.offAt-voice.at)*2-1;
-else if(src==="ENV 4")s=WavefeldEngine.envValue(at-voice.at,p.e4A,p.e4D,p.e4S,p.e4R,voice.offAt===null?null:voice.offAt-voice.at)*2-1;
-else if(src==="VELOCITY")s=voice.velocity/127*2-1;
-else if(src==="MOD WHEEL")s=this.modWheel*2-1;
+else if(src==="ENV 3")s=WavefeldEngine.envValue(at-voice.at,p.e3A,p.e3D,p.e3S,p.e3R,voice.offAt===null?null:voice.offAt-voice.at);
+else if(src==="ENV 4")s=WavefeldEngine.envValue(at-voice.at,p.e4A,p.e4D,p.e4S,p.e4R,voice.offAt===null?null:voice.offAt-voice.at);
+else if(src==="VELOCITY")s=voice.velocity/127;
+else if(src==="MOD WHEEL")s=this.modWheel;
 s=Math.sign(s)*Math.pow(Math.abs(s),.6+(1-slot.curve)*1.4);
 vals[target]+=s*(slot.amount*2-1);
 }return vals;
@@ -110,7 +110,7 @@ ga=ctx.createGain(),gb=ctx.createGain(),gc=ctx.createGain(),
 ring=ctx.createGain(),gr=ctx.createGain(),no=ctx.createBufferSource(),gn=ctx.createGain(),
 drive=ctx.createWaveShaper(),drive2=ctx.createWaveShaper(),f1=ctx.createBiquadFilter(),f2=ctx.createBiquadFilter(),
 fs=ctx.createGain(),fd=ctx.createGain(),fp1=ctx.createGain(),fp2=ctx.createGain(),
-amp=ctx.createGain(),pan=ctx.createStereoPanner();
+amp=ctx.createGain(),ampMod=ctx.createGain(),pan=ctx.createStereoPanner();
 const base=hz(note),semi=v=>Math.round((v-.5)*48);
 wa.frequency.value=base*Math.pow(2,semi(p.osc1Semi)/12);
 wb.frequency.value=base*Math.pow(2,semi(p.osc2Semi)/12);
@@ -134,12 +134,12 @@ f1.connect(fp1).connect(amp);f2.connect(drive2).connect(fp2).connect(amp);
 f1.type=FTYPES[p.f1Type|0]||"lowpass";f2.type=FTYPES[p.f2Type|0]||"lowpass";
 f1.Q.value=.5+p.f1Res*18;f2.Q.value=.5+p.f2Res*18;
 f1.frequency.value=log(45,14500,p.f1Cut);f2.frequency.value=log(45,14500,p.f2Cut);
-amp.gain.value=0;amp.connect(pan).connect(this.nodes.inbus);
+amp.gain.value=0;amp.connect(ampMod).connect(pan).connect(this.nodes.inbus);
 const a=log(.005,7,p.ampA),d=log(.03,12,p.ampD),peak=.68*(velocity/127);
 amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(peak,t+a);
 amp.gain.setTargetAtTime(peak*p.ampS,t+a,d/3);
 pan.pan.value=(p.pan-.5)*1.5;
-const voice={note,velocity,at:t,offAt:null,wa,wb,wc,ga,gb,gc,ring,gr,no,gn,drive,drive2,f1,f2,fs,fd,fp1,fp2,amp,pan,
+const voice={note,velocity,at:t,offAt:null,wa,wb,wc,ga,gb,gc,ring,gr,no,gn,drive,drive2,f1,f2,fs,fd,fp1,fp2,amp,ampMod,pan,
 dead:false,last1:-99,last2:-99,lastDrive1:-99,lastDrive2:-99,releaseTimer:null};
 this.voices.push(voice);wa.start(t);wb.start(t);wc.start(t);no.start(t);
 this.applyVoice(voice,t);return voice;
@@ -154,7 +154,7 @@ v.amp.gain.setTargetAtTime(0,t,Math.max(.01,r/4));
 const stop=t+r*1.55+.06;
 try{v.wa.stop(stop);v.wb.stop(stop);v.wc.stop(stop);v.no.stop(stop);}catch(e){}
 const timer=setTimeout(()=>{
-for(const n of [v.wa,v.wb,v.wc,v.no,v.ga,v.gb,v.gc,v.ring,v.gr,v.gn,v.drive,v.drive2,v.f1,v.f2,v.fs,v.fd,v.fp1,v.fp2,v.amp,v.pan]){
+for(const n of [v.wa,v.wb,v.wc,v.no,v.ga,v.gb,v.gc,v.ring,v.gr,v.gn,v.drive,v.drive2,v.f1,v.f2,v.fs,v.fd,v.fp1,v.fp2,v.amp,v.ampMod,v.pan]){
 try{n.disconnect();}catch(e){}}
 this.voices=this.voices.filter(x=>x!==v);this.releaseTimers.delete(timer);
 },Math.min(26000,Math.max(25,(stop-ctx.currentTime+.1)*1000)));
@@ -200,6 +200,7 @@ v.fs.gain.setTargetAtTime(serial?1:0,t,.04);v.fd.gain.setTargetAtTime(serial?0:1
 v.fp1.gain.setTargetAtTime(serial?0:.55,t,.04);
 v.fp2.gain.setTargetAtTime(serial?1:.55,t,.04);
 v.pan.pan.setTargetAtTime(clip((p.pan-.5)*1.6+m[10]*.6,-1,1),t,.04);
+v.ampMod.gain.setTargetAtTime(clip(1+m[9]*.55,.05,1.6),t,.04);
 }
 update(){
 if(!this.ctx)return;const p=this.patch,n=this.nodes,t=this.ctx.currentTime;
@@ -215,7 +216,9 @@ tick(t){
 if(!this.ctx)return;this.update();
 const n=this.nodes,p=this.patch;
 n.chorus.delayTime.setTargetAtTime(.009+p.chorusDepth*.006*Math.sin(TAU*t*log(.08,3,p.chorusRate)),t,.02);
-for(const v of this.voices)if(!v.dead)this.applyVoice(v,t);
+let wet=0,voices=0;
+for(const v of this.voices)if(!v.dead){this.applyVoice(v,t);wet+=this.modFor(v,t)[11];voices++;}
+if(voices)n.verbGain.gain.setTargetAtTime(clip(p.reverb+(wet/voices)*.33)*.85,t,.05);
 }
 };
 window.WavefeldEngine=WavefeldEngine;
