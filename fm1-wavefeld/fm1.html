@@ -26,7 +26,7 @@ header p{color:var(--muted);margin:8px 0 0;max-width:550px}header a{color:#c9fbe
 .knobs{margin-top:17px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .knobs .encoder{padding:10px 4px}
 .knobs label{font-size:11px;display:block;color:#8ed6c2;height:35px;overflow:hidden}
-.buttonrack{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:19px 0}
+.mastervol{display:flex;gap:14px;align-items:center;justify-content:center;margin:12px 0 0;color:#9ee4c7;font-size:11px;font-weight:800;letter-spacing:.08em}.mastervol input{width:min(220px,60%);accent-color:#9bebbd}.mastervol output{min-width:25px;color:#ecfbe1}.buttonrack{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:19px 0}
 .hwbutton{background:#263840;color:#eff3ec;border:1px solid #5d7476;border-bottom:3px solid #10171b;border-radius:7px;font-size:10px;min-height:39px;cursor:pointer}
 .hwbutton:hover,.hwbutton:focus-visible{background:#3e6a62;outline:1px solid #aaf6d3}
 .hwbutton.active{background:#447b67}.hwbutton:disabled{color:#71888b;background:#1a282f;cursor:not-allowed}
@@ -59,6 +59,7 @@ footer{font-size:11px;color:#7f9696;margin-top:22px;line-height:1.6}a{color:#aff
 <div class="upper"><div class="screenbezel"><canvas id="screen" width="240" height="240" aria-label="FM-1 240 by 240 LCD screen">FM-1 menu screen</canvas></div>
 <div class="encoders" id="encoders"></div></div>
 <div class="knobs" id="knobs"></div>
+<label class="mastervol" for="master-volume">MASTER VOLUME <input id="master-volume" type="range" min="0" max="127" value="85" aria-label="Hardware MASTER volume potentiometer"><output id="master-val">85</output></label>
 <div class="buttonrack" id="buttons"></div>
 <div class="keybed" id="keys" aria-label="FM-1 27 note keyboard"></div>
 <div class="bottom"><span>KEYS: F3–G5 · 27 notes · Click keys or use computer Z–M</span><button id="audio">◉ ENABLE AUDIO</button></div>
